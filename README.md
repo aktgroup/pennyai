@@ -1,7 +1,7 @@
 # Penny AI 🪙
 **Your Financial Partner by AKT GROUP LLC**
 
-Penny AI is a simple, private 50/30/20 budgeting tool designed for the Francophone and immigrant communities in the USA.
+Penny AI is a simple, private 50/30/20 budgeting tool designed for everyone that earn money.
 
 ## 📲 How to Install (English)
 1. Open the app link in your browser.
