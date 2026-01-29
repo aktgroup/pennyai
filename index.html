@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Penny AI - Your financial partner</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="icon192.png">
+    <link rel="apple-touch-icon" href="icon192.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#D4AF37">
+    <style>
+        :root {
+            --blue: #3498db; --yellow: #f1c40f; --green: #2ecc71;
+            --dark: #2c3e50; --bg: #fdfaf6; --white: #ffffff;
+        }
+
+        html, body { 
+            height: 100%; margin: 0; padding: 0; background: var(--white); 
+            font-family: 'Segoe UI', -apple-system, sans-serif; overflow: hidden; width: 100%;
+        }
+
+        .app-container { 
+            width: 100%; max-width: 500px; height: 100%; margin: 0 auto;
+            background: var(--white); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
+        }
+
+        header { text-align: center; margin-bottom: 20px; padding-top: 10px; position: relative; }
+        
+        .lang-select {
+            position: absolute; top: 0; right: 0; padding: 5px; border-radius: 8px;
+            border: 1px solid #ddd; font-size: 12px; background: #fff; width: auto; margin-bottom: 0;
+        }
+
+        .total-box { 
+            background: #f8f9fa; border-radius: 15px; padding: 20px; 
+            text-align: center; margin-bottom: 20px; border: 1px dashed #ccc; 
+        }
+        .total-amount { font-size: 36px; font-weight: bold; color: var(--dark); }
+        
+        .dashboard { display: flex; justify-content: space-around; margin-bottom: 25px; }
+        .circle { 
+            width: 85px; height: 85px; border-radius: 50%; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .needs { background: var(--blue); } 
+        .wants { background: var(--yellow); } 
+        .future { background: var(--green); }
+
+        .penny-bubble { 
+            background: #e1f5fe; border-radius: 15px; padding: 18px; 
+            margin-bottom: 25px; font-size: 16px; border-left: 6px solid var(--blue); line-height: 1.4;
+        }
+
+        input, select { 
+            width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; 
+            border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa;
+        }
+
+        .btn { 
+            width: 100%; padding: 18px; border: none; border-radius: 12px; 
+            background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 18px;
+        }
+
+        footer { 
+            margin-top: auto; padding: 20px 0; text-align: center; font-size: 11px; 
+            color: #95a5a6; border-top: 1px solid #eee; 
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; padding: 25px; border-radius: 20px; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <select class="lang-select" id="lang-picker" onchange="changeLanguage()">
+            <option value="en">English 🇺🇸</option>
+            <option value="fr">Français 🇫🇷</option>
+            <option value="es">Español 🇪🇸</option>
+        </select>
+        <div style="font-size: 24px; font-weight: bold;">Penny AI 🪙</div>
+        <div class="help-link" id="help-link" onclick="toggleModal(true)" style="color: var(--blue); font-size: 14px; cursor: pointer; text-decoration: underline;">How it works</div>
+    </header>
+
+    <div class="total-box">
+        <small id="label-balance" style="font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px;">Balance Remaining</small>
+        <div class="total-amount" id="total-val">$0</div>
+    </div>
+
+    <div class="penny-bubble" id="penny-message">
+        "Hi! Enter your monthly income to start your 50/30/20 plan."
+    </div>
+
+    <div class="dashboard">
+        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small id="label-needs">Needs</small></div>
+        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small id="label-wants">Wants</small></div>
+        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small id="label-future">Future</small></div>
+    </div>
+
+    <div id="ui-space" style="flex-grow: 1;">
+        <div id="setup-ui">
+            <input type="number" id="monthly-income" placeholder="Monthly Income ($)" inputmode="decimal">
+            <button class="btn" id="btn-start" onclick="initBudget()">Start Month</button>
+        </div>
+
+        <div id="action-ui" style="display:none;">
+            <input type="number" id="expense-amt" placeholder="Amount ($)" inputmode="decimal">
+            <select id="expense-cat">
+                <option value="needs" id="opt-needs">Need (Housing, Food, Utilities, bills)</option>
+                <option value="wants" id="opt-wants">Want (Flexible Fun,Entertainment, Dining out)</option>
+                <option value="future" id="opt-future">Future (Life Insurance, Savings, Investments)</option>
+            </select>
+            <button class="btn" id="btn-log" onclick="addExpense()">Log Expense</button>
+            <button class="btn" id="btn-finish" style="background: var(--green); margin-top: 10px;" onclick="finishMonth()">Finish Month</button>
+        </div>
+    </div>
+
+    <footer>
+        <strong id="footer-owner">AKT GROUP LLC</strong><br>
+        <span id="footer-privacy">Do not sell this app</span>
+    </footer>
+</div>
+
+<div class="modal" id="helpModal">
+    <div class="modal-content">
+        <h3 id="modal-title" style="margin-top:0;">Financial Rules 📜</h3>
+        <p id="rule-needs"><strong>50% Needs:</strong> Housing, Food, Utilities.</p>
+        <p id="rule-wants"><strong>30% Wants:</strong> Entertainment, Dining out.</p>
+        <p id="rule-future"><strong>20% Future:</strong> Life Insurance & Savings.</p>
+        <p id="rule-privacy-modal">This app stores your information on your own device; We do not get any of your private information.</p>
+        <button class="btn" id="btn-modal-close" onclick="toggleModal(false)">Got it!</button>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'en';
+    let budget = { needs: 0, wants: 0, future: 0 };
+
+    const translations = {
+        en: {
+            help: "How it works", balance: "Balance Remaining", welcome: "Hi! Enter your monthly income to start your 50/30/20 plan.",
+            needs: "Needs", wants: "Wants", future: "Future", start: "Start Month", incPlaceholder: "Monthly Income ($)",
+            amtPlaceholder: "Amount ($)", log: "Log Expense", finish: "Finish Month",
+            optNeeds: "Need (Housing, Food, Utilities, bills)", optWants: "Want (Flexible Fun,Entertainment, Dining out)", optFuture: "Future (Life Insurance, Savings, Investments)",
+            privacy: "This app stores your information on your own device. We do not get any of your private information.", 
+            modalTitle: "Financial Rules 📜",
+            ruleNeeds: "50% Needs: Housing, Food, Utilities.", ruleWants: "30% Wants: Entertainment, Dining out.",
+            ruleFuture: "20% Future: Life Insurance & Savings.", modalClose: "Got it!",
+            setMsg: "Income set. Stay disciplined!", 
+            finishOver: "Great! Put leftovers into your Life Insurance or Savings!",
+            finishZero: "Month Complete!"
+        },
+        fr: {
+            help: "Comment ça marche", balance: "Solde Restant", welcome: "Salut! Entrez votre revenu mensuel pour commencer votre plan 50/30/20.",
+            needs: "Besoins", wants: "Envies", future: "Futur", start: "Démarrer le mois", incPlaceholder: "Revenu Mensuel ($)",
+            amtPlaceholder: "Montant ($)", log: "Enregistrer", finish: "Terminer le mois",
+            optNeeds: "Besoin (Logement, nourriture, factures)", optWants: "Envie (Divertissement flexible, loisirs, restaurants)", optFuture: "Futur (Assurance vie, épargne, placements)",
+            privacy: "Cette application stocke vos informations sur votre propre appareil. Nous n'avons accès à aucune de vos informations personnelles.", 
+            modalTitle: "Règles Financières 📜",
+            ruleNeeds: "50% Besoins: Logement, Nourriture, Factures.", ruleWants: "30% Envies: Loisirs, Sorties.",
+            ruleFuture: "20% Futur: Assurance Vie & Épargne.", modalClose: "Compris!",
+            setMsg: "Revenu enregistré. Restez discipliné!", 
+            finishOver: "Super! Mettez le surplus dans votre Assurance Vie ou Épargne!",
+            finishZero: "Mois terminé!"
+        },
+        es: {
+            help: "¿Cómo funciona?", balance: "Saldo Restante", welcome: "¡Hola! Ingresa tu ingreso mensual para iniciar tu plan 50/30/20.",
+            needs: "Necesidades", wants: "Deseos", future: "Futuro", start: "Empezar Mes", incPlaceholder: "Ingreso Mensual ($)",
+            amtPlaceholder: "Monto ($)", log: "Registrar Gasto", finish: "Finalizar Mes",
+            optNeeds: "Necesidad (Vivienda, alimentación, facturas)", optWants: "Deseo (Ocio flexible, entretenimiento, salir a comer)", optFuture: "Futuro (Seguro de vida, ahorros, inversiones)",
+            privacy: "Esta aplicación almacena su información en su propio dispositivo. No tenemos acceso a ninguna de su información privada.", 
+            modalTitle: "Reglas Financieras 📜",
+            ruleNeeds: "50% Necesidades: Vivienda, Comida, Servicios.", ruleWants: "30% Deseos: Entretenimiento, Comidas.",
+            ruleFuture: "20% Futuro: Seguros y Ahorros.", modalClose: "¡Entendido!",
+            setMsg: "Ingreso fijado. ¡Mantén la disciplina!", 
+            finishOver: "¡Genial! ¡Ponga el sobrante en su Seguro de Vida o Ahorros!",
+            finishZero: "¡Mes completado!"
+        }
+    };
+
+    function changeLanguage() {
+        currentLang = document.getElementById('lang-picker').value;
+        const t = translations[currentLang];
+        
+        document.getElementById('help-link').innerText = t.help;
+        document.getElementById('label-balance').innerText = t.balance;
+        document.getElementById('penny-message').innerText = t.welcome;
+        document.getElementById('label-needs').innerText = t.needs;
+        document.getElementById('label-wants').innerText = t.wants;
+        document.getElementById('label-future').innerText = t.future;
+        document.getElementById('monthly-income').placeholder = t.incPlaceholder;
+        document.getElementById('btn-start').innerText = t.start;
+        document.getElementById('expense-amt').placeholder = t.amtPlaceholder;
+        document.getElementById('opt-needs').innerText = t.optNeeds;
+        document.getElementById('opt-wants').innerText = t.optWants;
+        document.getElementById('opt-future').innerText = t.optFuture;
+        document.getElementById('btn-log').innerText = t.log;
+        document.getElementById('btn-finish').innerText = t.finish;
+        document.getElementById('footer-privacy').innerText = t.privacy;
+        document.getElementById('modal-title').innerText = t.modalTitle;
+        document.getElementById('rule-needs').innerText = t.ruleNeeds;
+        document.getElementById('rule-wants').innerText = t.ruleWants;
+        document.getElementById('rule-future').innerText = t.ruleFuture;
+        document.getElementById('btn-modal-close').innerText = t.modalClose;
+        document.getElementById('rule-privacy-modal').innerText = t.privacy;
+    }
+
+    function toggleModal(show) { document.getElementById('helpModal').style.display = show ? 'flex' : 'none'; }
+
+    function initBudget() {
+        const income = document.getElementById('monthly-income').value;
+        if (income <= 0) return;
+        budget.needs = income * 0.5;
+        budget.wants = income * 0.3;
+        budget.future = income * 0.2;
+        updateUI(true);
+    }
+
+    function addExpense() {
+        const amt = parseFloat(document.getElementById('expense-amt').value);
+        const cat = document.getElementById('expense-cat').value;
+        if (isNaN(amt) || amt <= 0) return;
+        budget[cat] -= amt;
+        updateUI();
+        document.getElementById('expense-amt').value = '';
+    }
+
+    function updateUI(firstTime = false) {
+        const t = translations[currentLang];
+        document.getElementById('needs-val').innerText = `$${Math.max(0, Math.round(budget.needs))}`;
+        document.getElementById('wants-val').innerText = `$${Math.max(0, Math.round(budget.wants))}`;
+        document.getElementById('future-val').innerText = `$${Math.max(0, Math.round(budget.future))}`;
+        document.getElementById('total-val').innerText = `$${Math.round(budget.needs + budget.wants + budget.future)}`;
+        if (firstTime) {
+            document.getElementById('setup-ui').style.display = 'none';
+            document.getElementById('action-ui').style.display = 'block';
+            document.getElementById('penny-message').innerText = t.setMsg;
+        }
+    }
+
+    function finishMonth() {
+        const t = translations[currentLang];
+        const leftovers = Math.round(budget.needs + budget.wants);
+        document.getElementById('penny-message').innerHTML = leftovers > 0 ? 
+            t.finishOver.replace('$${leftovers}', `$${leftovers}`) : t.finishZero;
+        document.getElementById('action-ui').innerHTML = `<button class="btn" onclick="location.reload()">Reset</button>`;
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Penny AI is ready.'))
+          .catch(err => console.log('Service Worker error', err));
+      });
+    }
+</script>
+</body>
+</html>
