@@ -1,125 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><!DOCTYPE html>
-<html lang="en">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Penny AI - Angele Akotegnon</title>
+    <title>Penny AI - by Archaigel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root { --blue: #3498db; --yellow: #f1c40f; --green: #2ecc71; --dark: #2c3e50; --bg: #fdfaf6; --white: #ffffff; }
-        html, body { height: 100%; margin: 0; background: var(--white); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; width: 100%; }
-        body { display: flex; justify-content: center; padding: 10px; box-sizing: border-box; }
-        .app-container { width: 100%; max-width: 500px; background: var(--white); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
-        header { text-align: center; margin-bottom: 10px; position: relative; }
-        .lang-select { position: absolute; top: 0; right: 0; padding: 4px; border-radius: 8px; font-size: 11px; }
+        html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        .app-container { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; background: var(--white); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; overflow-y: auto; }
+        header { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
         .total-box { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px dashed #ccc; }
         .total-amount { font-size: 32px; font-weight: bold; color: var(--dark); }
         .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .circle { width: 70px; height: 70px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
-        .penny-bubble { background: #e1f5fe; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid var(--blue); }
-        input, select { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 5px; }
-        footer { margin-top: auto; padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; }
+        .penny-bubble { background: #e1f5fe; border-radius: 12px; padding: 15px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid var(--blue); line-height: 1.4; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
+        
+        /* History Section */
+        #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .history-desc { font-weight: bold; color: var(--dark); }
+        .history-meta { color: #7f8c8d; font-size: 11px; }
+
+        footer { padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; margin-top: auto; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <header>
-        <select class="lang-select" id="lang-picker" onchange="changeLanguage()">
-            <option value="en">English 🇺🇸</option>
-            <option value="fr">Français 🇫🇷</option>
-            <option value="es">Español 🇪🇸</option>
-        </select>
         <div style="font-size: 22px; font-weight: bold;">Penny AI 🪙</div>
+        <small>Designed by <strong>Archaigel</strong></small>
     </header>
 
     <div class="total-box">
-        <small id="label-balance">Balance Remaining</small>
+        <small style="text-transform: uppercase; letter-spacing: 1px;">Balance Remaining</small>
         <div class="total-amount" id="total-val">$0</div>
     </div>
 
-    <div class="penny-bubble" id="penny-message">"Hi! Enter your income to start."</div>
-
     <div class="dashboard">
-        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small id="label-needs">Needs</small></div>
-        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small id="label-wants">Wants</small></div>
-        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small id="label-future">Future</small></div>
+        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small>Needs</small></div>
+        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small>Wants</small></div>
+        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small>Future</small></div>
     </div>
 
-    <div id="ui-space">
-        <div id="setup-ui">
-            <input type="number" id="monthly-income" placeholder="Monthly Income ($)">
-            <button class="btn" onclick="initBudget()">Start Month</button>
-        </div>
+    <div class="penny-bubble" id="penny-message">
+        "Welcome! I am Archaigel's creation, Penny. Let's manage your wealth together."
+    </div>
 
-        <div id="action-ui" style="display:none;">
-            <input type="date" id="expense-date">
-            <input type="text" id="expense-desc" placeholder="What was this for?">
-            <input type="number" id="expense-amt" placeholder="Amount ($)">
-            <select id="expense-cat">
-                <option value="needs">Need</option>
-                <option value="wants">Want</option>
-                <option value="future">Future</option>
-            </select>
-            <button class="btn" onclick="addExpense()">Log Expense</button>
-            <button class="btn" style="background: var(--green);" onclick="showReportUI()">Finish & Report</button>
-        </div>
+    <div id="setup-ui">
+        <input type="number" id="monthly-income" placeholder="Total Monthly Income ($)" inputmode="decimal">
+        <button class="btn" onclick="initBudget()">Start Wealth Plan</button>
+    </div>
 
-        <div id="report-ui" style="display:none;">
-            <p>Select date range for PDF:</p>
-            <input type="date" id="report-start">
-            <input type="date" id="report-end">
-            <button class="btn" onclick="generatePDF()">Download PDF Report</button>
-            <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">New Month</button>
+    <div id="action-ui" style="display:none;">
+        <input type="date" id="exp-date">
+        <input type="text" id="exp-desc" placeholder="Expense Description (e.g., Groceries)">
+        <input type="number" id="exp-amt" placeholder="Amount ($)" inputmode="decimal">
+        <select id="exp-cat">
+            <option value="needs">Need (50%)</option>
+            <option value="wants">Want (30%)</option>
+            <option value="future">Future (20%)</option>
+        </select>
+        <button class="btn" onclick="addExpense()">Add Expense</button>
+        <button class="btn" style="background: var(--green);" onclick="showReportUI()">Generate Monthly Report</button>
+        
+        <div id="history-section">
+            <div style="font-weight: bold; margin-bottom: 10px;">Recent History</div>
+            <div id="history-list"></div>
         </div>
+    </div>
+
+    <div id="report-ui" style="display:none;">
+        <input type="date" id="rep-start">
+        <input type="date" id="rep-end" style="margin-top: 5px;">
+        <button class="btn" style="margin-top: 15px;" onclick="generatePDF()">Download PDF Report</button>
+        <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">Start New Month</button>
     </div>
 
     <footer>
-        <strong>Angele Akotegnon</strong> | AKT Group LLC<br>
+        <strong>Archaigel</strong> | Financial Architect<br>
         Do not sell my personal information
     </footer>
 </div>
 
 <script>
     let expenses = [];
-    let budget = { needs: 0, wants: 0, future: 0, initialIncome: 0 };
-    let currentLang = 'en';
-
-    // Set default date to today
-    document.getElementById('expense-date').valueAsDate = new Date();
+    let budget = { needs: 0, wants: 0, future: 0, total: 0 };
+    document.getElementById('exp-date').valueAsDate = new Date();
 
     function initBudget() {
-        const income = document.getElementById('monthly-income').value;
-        if (income <= 0) return;
-        budget.initialIncome = income;
-        budget.needs = income * 0.5;
-        budget.wants = income * 0.3;
-        budget.future = income * 0.2;
+        const inc = document.getElementById('monthly-income').value;
+        if (inc <= 0) return;
+        budget.total = inc;
+        budget.needs = inc * 0.5; budget.wants = inc * 0.3; budget.future = inc * 0.2;
         document.getElementById('setup-ui').style.display = 'none';
         document.getElementById('action-ui').style.display = 'block';
         updateUI();
     }
 
     function addExpense() {
-        const date = document.getElementById('expense-date').value;
-        const desc = document.getElementById('expense-desc').value;
-        const amt = parseFloat(document.getElementById('expense-amt').value);
-        const cat = document.getElementById('expense-cat').value;
+        const d = document.getElementById('exp-date').value;
+        const s = document.getElementById('exp-desc').value;
+        const a = parseFloat(document.getElementById('exp-amt').value);
+        const c = document.getElementById('exp-cat').value;
+        if (!d || !s || isNaN(a)) return;
 
-        if (!date || !desc || isNaN(amt)) return alert("Please fill all fields");
-
-        budget[cat] -= amt;
-        expenses.push({ date, desc, amt, cat });
+        budget[c] -= a;
+        expenses.unshift({ date: d, desc: s, amt: a, cat: c }); // Newest on top
         
         updateUI();
-        document.getElementById('expense-desc').value = '';
-        document.getElementById('expense-amt').value = '';
+        updateHistory();
+        document.getElementById('exp-desc').value = '';
+        document.getElementById('exp-amt').value = '';
     }
 
     function updateUI() {
@@ -129,207 +126,36 @@
         document.getElementById('total-val').innerText = `$${Math.round(budget.needs + budget.wants + budget.future)}`;
     }
 
-    function showReportUI() {
-        document.getElementById('action-ui').style.display = 'none';
-        document.getElementById('report-ui').style.display = 'block';
-        document.getElementById('penny-message').innerText = "Ready to generate your professional report.";
-    }
-
-    async function generatePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const start = document.getElementById('report-start').value;
-        const end = document.getElementById('report-end').value;
-
-        const filtered = expenses.filter(e => {
-            if (!start || !end) return true;
-            return e.date >= start && e.date <= end;
-        });
-
-        // Header
-        doc.setFontSize(18);
-        doc.text("Penny AI Financial Report", 14, 20);
-        doc.setFontSize(10);
-        doc.text(`Lead Designer: Angele Akotegnon | AKT Group LLC`, 14, 28);
-        doc.text(`Initial Monthly Income: $${budget.initialIncome}`, 14, 35);
-        
-        // Table
-        const tableData = filtered.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt}`]);
-        doc.autoTable({
-            startY: 45,
-            head: [['Date', 'Description', 'Category', 'Amount']],
-            body: tableData,
-        });
-
-        doc.text(`Remaining Balance: $${document.getElementById('total-val').innerText}`, 14, doc.lastAutoTable.finalY + 10);
-        doc.save("Penny_AI_Report.pdf");
-    }
-
-    function changeLanguage() { /* Standard translation logic as before */ }
-</script>
-</body>
-</html>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Penny AI - Angele Akotegnon</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <style>
-        :root { --blue: #3498db; --yellow: #f1c40f; --green: #2ecc71; --dark: #2c3e50; --bg: #fdfaf6; --white: #ffffff; }
-        html, body { height: 100%; margin: 0; background: var(--white); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; width: 100%; }
-        body { display: flex; justify-content: center; padding: 10px; box-sizing: border-box; }
-        .app-container { width: 100%; max-width: 500px; background: var(--white); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
-        header { text-align: center; margin-bottom: 10px; position: relative; }
-        .lang-select { position: absolute; top: 0; right: 0; padding: 4px; border-radius: 8px; font-size: 11px; }
-        .total-box { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px dashed #ccc; }
-        .total-amount { font-size: 32px; font-weight: bold; color: var(--dark); }
-        .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
-        .penny-bubble { background: #e1f5fe; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid var(--blue); }
-        input, select { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 5px; }
-        footer { margin-top: auto; padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; }
-    </style>
-</head>
-<body>
-
-<div class="app-container">
-    <header>
-        <select class="lang-select" id="lang-picker" onchange="changeLanguage()">
-            <option value="en">English 🇺🇸</option>
-            <option value="fr">Français 🇫🇷</option>
-            <option value="es">Español 🇪🇸</option>
-        </select>
-        <div style="font-size: 22px; font-weight: bold;">Penny AI 🪙</div>
-    </header>
-
-    <div class="total-box">
-        <small id="label-balance">Balance Remaining</small>
-        <div class="total-amount" id="total-val">$0</div>
-    </div>
-
-    <div class="penny-bubble" id="penny-message">"Hi! Enter your income to start."</div>
-
-    <div class="dashboard">
-        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small id="label-needs">Needs</small></div>
-        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small id="label-wants">Wants</small></div>
-        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small id="label-future">Future</small></div>
-    </div>
-
-    <div id="ui-space">
-        <div id="setup-ui">
-            <input type="number" id="monthly-income" placeholder="Monthly Income ($)">
-            <button class="btn" onclick="initBudget()">Start Month</button>
-        </div>
-
-        <div id="action-ui" style="display:none;">
-            <input type="date" id="expense-date">
-            <input type="text" id="expense-desc" placeholder="What was this for?">
-            <input type="number" id="expense-amt" placeholder="Amount ($)">
-            <select id="expense-cat">
-                <option value="needs">Need</option>
-                <option value="wants">Want</option>
-                <option value="future">Future</option>
-            </select>
-            <button class="btn" onclick="addExpense()">Log Expense</button>
-            <button class="btn" style="background: var(--green);" onclick="showReportUI()">Finish & Report</button>
-        </div>
-
-        <div id="report-ui" style="display:none;">
-            <p>Select date range for PDF:</p>
-            <input type="date" id="report-start">
-            <input type="date" id="report-end">
-            <button class="btn" onclick="generatePDF()">Download PDF Report</button>
-            <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">New Month</button>
-        </div>
-    </div>
-
-    <footer>
-        <strong>Angele Akotegnon</strong> | AKT Group LLC<br>
-        Do not sell my personal information
-    </footer>
-</div>
-
-<script>
-    let expenses = [];
-    let budget = { needs: 0, wants: 0, future: 0, initialIncome: 0 };
-    let currentLang = 'en';
-
-    // Set default date to today
-    document.getElementById('expense-date').valueAsDate = new Date();
-
-    function initBudget() {
-        const income = document.getElementById('monthly-income').value;
-        if (income <= 0) return;
-        budget.initialIncome = income;
-        budget.needs = income * 0.5;
-        budget.wants = income * 0.3;
-        budget.future = income * 0.2;
-        document.getElementById('setup-ui').style.display = 'none';
-        document.getElementById('action-ui').style.display = 'block';
-        updateUI();
-    }
-
-    function addExpense() {
-        const date = document.getElementById('expense-date').value;
-        const desc = document.getElementById('expense-desc').value;
-        const amt = parseFloat(document.getElementById('expense-amt').value);
-        const cat = document.getElementById('expense-cat').value;
-
-        if (!date || !desc || isNaN(amt)) return alert("Please fill all fields");
-
-        budget[cat] -= amt;
-        expenses.push({ date, desc, amt, cat });
-        
-        updateUI();
-        document.getElementById('expense-desc').value = '';
-        document.getElementById('expense-amt').value = '';
-    }
-
-    function updateUI() {
-        document.getElementById('needs-val').innerText = `$${Math.round(budget.needs)}`;
-        document.getElementById('wants-val').innerText = `$${Math.round(budget.wants)}`;
-        document.getElementById('future-val').innerText = `$${Math.round(budget.future)}`;
-        document.getElementById('total-val').innerText = `$${Math.round(budget.needs + budget.wants + budget.future)}`;
+    function updateHistory() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = expenses.slice(0, 5).map(e => `
+            <div class="history-item">
+                <div>
+                    <div class="history-desc">${e.desc}</div>
+                    <div class="history-meta">${e.date} • ${e.cat.toUpperCase()}</div>
+                </div>
+                <div style="font-weight: bold; color: #e74c3c;">-$${e.amt}</div>
+            </div>
+        `).join('');
     }
 
     function showReportUI() {
         document.getElementById('action-ui').style.display = 'none';
         document.getElementById('report-ui').style.display = 'block';
-        document.getElementById('penny-message').innerText = "Ready to generate your professional report.";
     }
 
-    async function generatePDF() {
+    function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const start = document.getElementById('report-start').value;
-        const end = document.getElementById('report-end').value;
-
-        const filtered = expenses.filter(e => {
-            if (!start || !end) return true;
-            return e.date >= start && e.date <= end;
-        });
-
-        // Header
+        const rows = expenses.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt}`]);
         doc.setFontSize(18);
         doc.text("Penny AI Financial Report", 14, 20);
         doc.setFontSize(10);
-        doc.text(`Lead Designer: Angele Akotegnon | AKT Group LLC`, 14, 28);
-        doc.text(`Initial Monthly Income: $${budget.initialIncome}`, 14, 35);
-        
-        // Table
-        const tableData = filtered.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt}`]);
-        doc.autoTable({
-            startY: 45,
-            head: [['Date', 'Description', 'Category', 'Amount']],
-            body: tableData,
-        });
-
-        doc.text(`Remaining Balance: $${document.getElementById('total-val').innerText}`, 14, doc.lastAutoTable.finalY + 10);
-        doc.save("Penny_AI_Report.pdf");
+        doc.text("Signature: Archaigel", 14, 28);
+        doc.autoTable({ startY: 35, head: [['Date', 'Description', 'Category', 'Amount']], body: rows });
+        doc.save("Penny_Archaigel_Report.pdf");
     }
-
-    function changeLanguage() { /* Standard translation logic as before */ }
 </script>
+
 </body>
 </html>
