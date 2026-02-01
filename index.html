@@ -14,13 +14,12 @@
         .total-box { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px dashed #ccc; }
         .total-amount { font-size: 32px; font-weight: bold; color: var(--dark); }
         .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .circle { width: 70px; height: 70px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
         .penny-bubble { background: #e1f5fe; border-radius: 12px; padding: 15px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid var(--blue); line-height: 1.4; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
         .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
         
-        /* History Section */
         #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
         .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
         .history-desc { font-weight: bold; color: var(--dark); }
@@ -43,13 +42,13 @@
     </div>
 
     <div class="dashboard">
-        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small>Needs</small></div>
-        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small>Wants</small></div>
-        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small>Future</small></div>
+        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small>Needs 50%</small></div>
+        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small>Want 30%</small></div>
+        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small>Future 20%</small></div>
     </div>
 
     <div class="penny-bubble" id="penny-message">
-        "Welcome! I am Archaigel's creation, Penny. Let's manage your wealth together."
+        "Hi! I am Penny. Let's grow your financial tree with Archaigel's strategy."
     </div>
 
     <div id="setup-ui">
@@ -59,12 +58,12 @@
 
     <div id="action-ui" style="display:none;">
         <input type="date" id="exp-date">
-        <input type="text" id="exp-desc" placeholder="Expense Description (e.g., Groceries)">
+        <input type="text" id="exp-desc" placeholder="Expense Description (e.g., Rent)">
         <input type="number" id="exp-amt" placeholder="Amount ($)" inputmode="decimal">
         <select id="exp-cat">
-            <option value="needs">Need (50%)</option>
-            <option value="wants">Want (30%)</option>
-            <option value="future">Future (20%)</option>
+            <option value="needs">Needs (for Housing, Food, Utilities)</option>
+            <option value="wants">Want (Entertainment, Dining out)</option>
+            <option value="future">Future (Life Insurance & Savings)</option>
         </select>
         <button class="btn" onclick="addExpense()">Add Expense</button>
         <button class="btn" style="background: var(--green);" onclick="showReportUI()">Generate Monthly Report</button>
@@ -111,7 +110,7 @@
         if (!d || !s || isNaN(a)) return;
 
         budget[c] -= a;
-        expenses.unshift({ date: d, desc: s, amt: a, cat: c }); // Newest on top
+        expenses.unshift({ date: d, desc: s, amt: a, cat: c });
         
         updateUI();
         updateHistory();
@@ -128,15 +127,18 @@
 
     function updateHistory() {
         const list = document.getElementById('history-list');
-        list.innerHTML = expenses.slice(0, 5).map(e => `
-            <div class="history-item">
-                <div>
-                    <div class="history-desc">${e.desc}</div>
-                    <div class="history-meta">${e.date} • ${e.cat.toUpperCase()}</div>
+        list.innerHTML = expenses.slice(0, 5).map(e => {
+            let catLabel = e.cat === 'needs' ? 'Needs' : (e.cat === 'wants' ? 'Want' : 'Future');
+            return `
+                <div class="history-item">
+                    <div>
+                        <div class="history-desc">${e.desc}</div>
+                        <div class="history-meta">${e.date} • ${catLabel}</div>
+                    </div>
+                    <div style="font-weight: bold; color: #e74c3c;">-$${e.amt}</div>
                 </div>
-                <div style="font-weight: bold; color: #e74c3c;">-$${e.amt}</div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function showReportUI() {
@@ -147,11 +149,14 @@
     function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const rows = expenses.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt}`]);
+        const rows = expenses.map(e => {
+            let catLabel = e.cat === 'needs' ? 'Needs' : (e.cat === 'wants' ? 'Want' : 'Future');
+            return [e.date, e.desc, catLabel, `$${e.amt}`];
+        });
         doc.setFontSize(18);
         doc.text("Penny AI Financial Report", 14, 20);
         doc.setFontSize(10);
-        doc.text("Signature: Archaigel", 14, 28);
+        doc.text("Architect: Archaigel", 14, 28);
         doc.autoTable({ startY: 35, head: [['Date', 'Description', 'Category', 'Amount']], body: rows });
         doc.save("Penny_Archaigel_Report.pdf");
     }
