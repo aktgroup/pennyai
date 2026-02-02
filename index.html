@@ -10,38 +10,32 @@
     <style>
         :root { --blue: #3498db; --yellow: #f1c40f; --green: #2ecc71; --dark: #2c3e50; --bg: #fdfaf6; --white: #ffffff; }
         html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .app-container { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; background: var(--white); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; overflow-y: auto; }
         
-        .app-container { 
-            width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; 
-            background: var(--white); display: flex; flex-direction: column; 
-            padding: 15px; box-sizing: border-box; overflow-y: auto; 
-        }
-        
-        /* Language switcher on the right */
-        header { text-align: center; margin-bottom: 15px; flex-shrink: 0; position: relative; padding-top: 10px; }
-        .lang-select { 
-            position: absolute; top: 0; right: 0; padding: 4px; 
-            border-radius: 8px; border: 1px solid #ddd; font-size: 12px; 
-            width: 65px; background: #fff; cursor: pointer; 
-        }
+        header { text-align: center; margin-bottom: 10px; flex-shrink: 0; position: relative; padding-top: 35px; }
+        .header-tools { position: absolute; top: 0; right: 0; display: flex; gap: 8px; align-items: center; }
+        .lang-select { padding: 4px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; width: 65px; background: #fff; }
+        .help-icon { background: var(--dark); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
         .total-box { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px dashed #ccc; }
         .total-amount { font-size: 32px; font-weight: bold; color: var(--dark); }
         
-        .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .circle { 
-            width: 75px; height: 75px; border-radius: 50%; display: flex; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            color: white; font-weight: bold; font-size: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-        }
+        .dashboard { display: flex; justify-content: space-around; margin-bottom: 10px; }
+        .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px; }
         .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
         
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
-        
-        #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .delete-btn { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        /* Modal - Professional Mission Layout */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 20px; width: 85%; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.3); }
+        .close-modal { position: sticky; top: -10px; float: right; background: white; border-radius: 50%; width: 30px; height: 30px; text-align: center; font-size: 24px; cursor: pointer; line-height: 30px; font-weight: bold; }
+        .modal h2 { color: var(--dark); margin-top: 0; }
+        .modal h3 { border-bottom: 2px solid var(--blue); display: inline-block; margin-bottom: 10px; }
+        .modal p, .modal li { font-size: 14px; line-height: 1.5; color: #444; }
+
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; background: #fafafa; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .delete-btn { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
         
         footer { padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; margin-top: auto; }
         #chartCanvas { position: absolute; left: -9999px; top: -9999px; }
@@ -51,14 +45,53 @@
 
 <div class="app-container">
     <header>
-        <select class="lang-select" id="lang-picker" onchange="changeLanguage()">
-            <option value="en">EN 🇺🇸</option>
-            <option value="fr">FR 🇫🇷</option>
-            <option value="es">ES 🇪🇸</option>
-        </select>
+        <div class="header-tools">
+            <div class="help-icon" onclick="toggleModal(true)">?</div>
+            <select class="lang-select" id="lang-picker" onchange="changeLanguage()">
+                <option value="en">EN 🇺🇸</option>
+                <option value="fr">FR 🇫🇷</option>
+                <option value="es">ES 🇪🇸</option>
+            </select>
+        </div>
         <div style="font-size: 24px; font-weight: bold;">Penny AI 🪙</div>
         <small>Designed by <strong>Archaigel</strong></small>
     </header>
+
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+            <div id="modal-text">
+                <h2>Penny AI 🪙</h2>
+                <p>Designed by <strong>Archaigel (AKT Group LLC)</strong></p>
+                <p>Penny AI is a financial discipline tool designed for middle-class families and small business owners. It is built to support the <strong>Community Shield 2026</strong> initiative—a mission to ensure that "No Family is Left Behind."</p>
+                
+                <h3>🛡️ The Mission</h3>
+                <p>Our goal is to stop the "GoFundMe cycle" by educating 1,000 families across 25 states. We focus on:</p>
+                <ul>
+                    <li><strong>Protection:</strong> Using Life Insurance as a foundation.</li>
+                    <li><strong>Accumulation:</strong> Building tax-free wealth.</li>
+                    <li><strong>Legacy:</strong> Will and Trust planning for the future.</li>
+                </ul>
+
+                <h3>🛠️ Features</h3>
+                <ul>
+                    <li><strong>50/30/20 Strategy:</strong> Automated tracking for Needs, Wants, and Future savings.</li>
+                    <li><strong>Trilingual Support:</strong> Available in English, French, and Spanish.</li>
+                    <li><strong>Visual Reporting:</strong> Generates professional PDF reports with spending graphs.</li>
+                    <li><strong>Privacy First:</strong> All data stays locally on your device.</li>
+                </ul>
+
+                <h3>🚀 How to Use</h3>
+                <ol>
+                    <li>Enter your Monthly Income.</li>
+                    <li>Log your daily expenses with a date and description.</li>
+                    <li>Review your "Recent History" and delete any mistakes.</li>
+                    <li>Download your Monthly Report to track your progress.</li>
+                </ol>
+                <p style="text-align: center; font-weight: bold; margin-top: 20px;">“Educating our communities today for a secure tomorrow.” — Archaigel</p>
+            </div>
+        </div>
+    </div>
 
     <div class="total-box">
         <small id="lbl-bal">Balance Remaining</small>
@@ -73,7 +106,7 @@
 
     <div id="setup-ui">
         <input type="number" id="monthly-income" placeholder="Monthly Income ($)" inputmode="decimal">
-        <button class="btn" id="btn-start" onclick="initBudget()">Start tracking</button>
+        <button class="btn" id="btn-start" onclick="initBudget()">Start Wealth Plan</button>
     </div>
 
     <div id="action-ui" style="display:none;">
@@ -86,7 +119,7 @@
             <option value="future" id="opt-f">Future 20% (Life Insurance & Savings)</option>
         </select>
         <button class="btn" id="btn-add" onclick="addExpense()">Add Expense</button>
-        <button class="btn" id="btn-rep" style="background: var(--green);" onclick="showReportUI()">Finish & Report</button>
+        <button class="btn" id="btn-rep" style="background: var(--green); margin-top: 8px;" onclick="showReportUI()">Finish & Report</button>
         
         <div id="history-section">
             <div style="font-weight: bold; margin-bottom: 10px;" id="lbl-hist">Recent History</div>
@@ -95,11 +128,10 @@
     </div>
 
     <div id="report-ui" style="display:none;">
-        <div style="text-align: center; margin-bottom: 10px;">Select Dates:</div>
         <input type="date" id="rep-start">
         <input type="date" id="rep-end" style="margin-top: 5px;">
         <button class="btn" id="btn-pdf" style="margin-top: 15px;" onclick="generatePDF()">Download Report</button>
-        <button class="btn" id="btn-res" style="background: #eee; color: #333;" onclick="location.reload()">Reset</button>
+        <button class="btn" id="btn-res" style="background: #eee; color: #333; margin-top: 8px;" onclick="location.reload()">Reset</button>
     </div>
 
     <footer>
@@ -117,10 +149,14 @@
     document.getElementById('exp-date').valueAsDate = new Date();
 
     const trans = {
-        en: { bal: "Balance Remaining", n: "Needs 50%", w: "Want 30%", f: "Future 20%", start: "Start tracking", add: "Add Expense", rep: "Finish & Report", hist: "Recent History", priv: "Your information stays on your device", del: "Delete", incPlac: "Monthly Income ($)", descPlac: "Description", optN: "Needs 50% (Housing, Food, Utilities)", optW: "Want 30% (Entertainment, Dining out)", optF: "Future 20% (Life Insurance & Savings)" },
-        fr: { bal: "Solde Restant", n: "Besoins 50%", w: "Envies 30%", f: "Futur 20%", start: "Démarrer le suivi", add: "Enregistrer", rep: "Terminer & Rapport", hist: "Historique récent", priv: "Vos informations restent sur votre appareil", del: "Suppr", incPlac: "Revenu Mensuel ($)", descPlac: "Description", optN: "Besoins 50% (Logement, Factures)", optW: "Envies 30% (Loisirs, Sorties)", optF: "Futur 20% (Assurance Vie & Épargne)" },
-        es: { bal: "Saldo Restante", n: "Necesidades 50%", w: "Deseos 30%", f: "Futuro 20%", start: "Iniciar a rastrear", add: "Registrar Gasto", rep: "Finalizar y Reporte", hist: "Historial Reciente", priv: "Su información permanece en su dispositivo", del: "Borrar", incPlac: "Ingreso Mensual ($)", descPlac: "Descripción", optN: "Necesidades 50% (Vivienda, Comida)", optW: "Deseos 30% (Diversión, Comidas)", optF: "Futuro 20% (Seguros y Ahorros)" }
+        en: { bal: "Balance Remaining", n: "Needs 50%", w: "Want 30%", f: "Future 20%", start: "Start Wealth Plan", add: "Add Expense", rep: "Finish & Report", hist: "Recent History", priv: "Your information stays on your device", del: "Delete" },
+        fr: { bal: "Solde Restant", n: "Besoins 50%", w: "Envies 30%", f: "Futur 20%", start: "Démarrer le plan", add: "Enregistrer", rep: "Terminer & Rapport", hist: "Historique récent", priv: "Vos informations restent sur votre appareil", del: "Suppr" },
+        es: { bal: "Saldo Restante", n: "Necesidades 50%", w: "Deseos 30%", f: "Futuro 20%", start: "Iniciar Plan", add: "Registrar Gasto", rep: "Finalizar y Reporte", hist: "Historial Reciente", priv: "Su información permanece en su dispositivo", del: "Borrar" }
     };
+
+    function toggleModal(show) {
+        document.getElementById('helpModal').style.display = show ? 'block' : 'none';
+    }
 
     function changeLanguage() {
         currentLang = document.getElementById('lang-picker').value;
@@ -134,11 +170,6 @@
         document.getElementById('btn-rep').innerText = t.rep;
         document.getElementById('lbl-hist').innerText = t.hist;
         document.getElementById('lbl-priv').innerText = t.priv;
-        document.getElementById('monthly-income').placeholder = t.incPlac;
-        document.getElementById('exp-desc').placeholder = t.descPlac;
-        document.getElementById('opt-n').innerText = t.optN;
-        document.getElementById('opt-w').innerText = t.optW;
-        document.getElementById('opt-f').innerText = t.optF;
         updateHistory();
     }
 
@@ -161,8 +192,7 @@
         budget[c] -= a;
         expenses.push({ id: Date.now(), date: d, desc: s, amt: a, cat: c });
         expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-        updateUI();
-        updateHistory();
+        updateUI(); updateHistory();
         document.getElementById('exp-desc').value = '';
         document.getElementById('exp-amt').value = '';
     }
@@ -185,18 +215,15 @@
 
     function updateHistory() {
         const list = document.getElementById('history-list');
-        list.innerHTML = expenses.map(e => {
-            let catName = e.cat === 'needs' ? trans[currentLang].n.split(' ')[0] : (e.cat === 'wants' ? trans[currentLang].w.split(' ')[0] : trans[currentLang].f.split(' ')[0]);
-            return `
-                <div class="history-item">
-                    <div>
-                        <div class="history-desc">${e.desc}</div>
-                        <div class="history-meta">${e.date} • ${catName} • -$${e.amt.toFixed(2)}</div>
-                    </div>
-                    <button class="delete-btn" onclick="deleteExpense(${e.id})">${trans[currentLang].del}</button>
+        list.innerHTML = expenses.map(e => `
+            <div class="history-item">
+                <div>
+                    <div class="history-desc">${e.desc}</div>
+                    <div class="history-meta">${e.date} • -$${e.amt.toFixed(2)}</div>
                 </div>
-            `;
-        }).join('');
+                <button class="delete-btn" onclick="deleteExpense(${e.id})">${trans[currentLang].del}</button>
+            </div>
+        `).join('');
     }
 
     function showReportUI() {
@@ -215,7 +242,7 @@
         doc.setFontSize(20); doc.text("Archaigel Penny AI Report", 14, 20);
         doc.addImage(canvas.toDataURL('image/png'), 'PNG', 70, 40, 60, 60);
         doc.autoTable({ startY: 110, head: [['Date', 'Desc', 'Cat', 'Amt']], body: expenses.map(e => [e.date, e.desc, e.cat, `$${e.amt.toFixed(2)}`]) });
-        doc.text(`Total Monthly Income: $${budget.totalIncome.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
+        doc.text(`Monthly Income: $${budget.totalIncome.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
         doc.text(`Architect: Archaigel`, 14, doc.lastAutoTable.finalY + 20);
         doc.save("Penny_Report_Archaigel.pdf");
         myChart.destroy();
