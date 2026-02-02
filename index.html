@@ -20,11 +20,11 @@
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
         .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
         
-        /* History List Styling */
         #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
-        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
         .history-desc { font-weight: bold; color: var(--dark); }
         .history-meta { color: #7f8c8d; font-size: 11px; }
+        .delete-btn { color: #e74c3c; cursor: pointer; font-weight: bold; padding: 5px 10px; font-size: 18px; }
 
         footer { padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; margin-top: auto; }
         #chartCanvas { position: absolute; left: -9999px; top: -9999px; }
@@ -81,7 +81,7 @@
 
     <footer>
         <strong>Archaigel</strong> | Financial Architect<br>
-        Your information stays on your device
+       Your personal information stays on your device
     </footer>
 </div>
 
@@ -110,12 +110,23 @@
         if (!d || !s || isNaN(a)) return;
 
         budget[c] -= a;
-        expenses.unshift({ date: d, desc: s, amt: a, cat: c });
+        expenses.unshift({ id: Date.now(), date: d, desc: s, amt: a, cat: c });
         
         updateUI();
         updateHistory();
         document.getElementById('exp-desc').value = '';
         document.getElementById('exp-amt').value = '';
+    }
+
+    function deleteExpense(id) {
+        const index = expenses.findIndex(e => e.id === id);
+        if (index > -1) {
+            const item = expenses[index];
+            budget[item.cat] += item.amt;
+            expenses.splice(index, 1);
+            updateUI();
+            updateHistory();
+        }
     }
 
     function updateUI() {
@@ -132,8 +143,9 @@
                 <div>
                     <div class="history-desc">${e.desc}</div>
                     <div class="history-meta">${e.date} • ${e.cat.toUpperCase()}</div>
+                    <div style="font-weight: bold; color: #e74c3c;">-$${e.amt.toFixed(2)}</div>
                 </div>
-                <div style="font-weight: bold; color: #e74c3c;">-$${e.amt.toFixed(2)}</div>
+                <div class="delete-btn" onclick="deleteExpense(${e.id})">×</div>
             </div>
         `).join('');
     }
@@ -171,9 +183,9 @@
         const chartImg = canvas.toDataURL('image/png');
 
         doc.setFontSize(20);
-        doc.text("Penny AI Financial Report", 14, 20);
+        doc.text("Archaigel Penny AI Report", 14, 20);
         doc.setFontSize(10);
-        doc.text("Lead Designer: Archaigel", 14, 28);
+        doc.text(`Lead Designer: Archaigel`, 14, 28);
         
         doc.addImage(chartImg, 'PNG', 70, 40, 60, 60);
 
