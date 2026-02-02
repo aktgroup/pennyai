@@ -9,9 +9,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --blue: #3498db; --yellow: #f1c40f; --green: #2ecc71; --dark: #2c3e50; --bg: #fdfaf6; --white: #ffffff; }
-        html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         .app-container { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; background: var(--white); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        header { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
+        header { text-align: center; margin-bottom: 10px; position: relative; flex-shrink: 0; }
+        .lang-select { position: absolute; top: 0; right: 0; padding: 5px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; }
         .total-box { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px dashed #ccc; }
         .total-amount { font-size: 32px; font-weight: bold; color: var(--dark); }
         .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
@@ -19,13 +20,9 @@
         .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
         .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
-        
         #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .history-desc { font-weight: bold; color: var(--dark); }
-        .history-meta { color: #7f8c8d; font-size: 11px; }
-        .delete-btn { color: #e74c3c; cursor: pointer; font-weight: bold; padding: 5px 10px; font-size: 18px; }
-
+        .delete-btn { background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
         footer { padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; margin-top: auto; }
         #chartCanvas { position: absolute; left: -9999px; top: -9999px; }
     </style>
@@ -34,40 +31,45 @@
 
 <div class="app-container">
     <header>
+        <select class="lang-select" id="lang-picker" onchange="changeLanguage()">
+            <option value="en">EN 🇺🇸</option>
+            <option value="fr">FR 🇫🇷</option>
+            <option value="es">ES 🇪🇸</option>
+        </select>
         <div style="font-size: 22px; font-weight: bold;">Penny AI 🪙</div>
         <small>Designed by <strong>Archaigel</strong></small>
     </header>
 
     <div class="total-box">
-        <small style="text-transform: uppercase; letter-spacing: 1px;">Balance Remaining</small>
+        <small id="lbl-bal">Balance Remaining</small>
         <div class="total-amount" id="total-val">$0</div>
     </div>
 
     <div class="dashboard">
-        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small>Needs 50%</small></div>
-        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small>Want 30%</small></div>
-        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small>Future 20%</small></div>
+        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small id="lbl-n">Needs 50%</small></div>
+        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small id="lbl-w">Want 30%</small></div>
+        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small id="lbl-f">Future 20%</small></div>
     </div>
 
     <div id="setup-ui">
-        <input type="number" id="monthly-income" placeholder="Total Monthly Income ($)" inputmode="decimal">
-        <button class="btn" onclick="initBudget()">Start Wealth Plan</button>
+        <input type="number" id="monthly-income" placeholder="Monthly Income ($)" inputmode="decimal">
+        <button class="btn" id="btn-start" onclick="initBudget()">Start Wealth Plan</button>
     </div>
 
     <div id="action-ui" style="display:none;">
         <input type="date" id="exp-date">
-        <input type="text" id="exp-desc" placeholder="Expense Description">
+        <input type="text" id="exp-desc" placeholder="Description">
         <input type="number" id="exp-amt" placeholder="Amount ($)" inputmode="decimal">
         <select id="exp-cat">
-            <option value="needs">Needs (Housing, Food, Utilities)</option>
-            <option value="wants">Want (Entertainment, Dining out)</option>
-            <option value="future">Future (Life Insurance & Savings)</option>
+            <option value="needs" id="opt-n">Needs (Housing, Food, Utilities)</option>
+            <option value="wants" id="opt-w">Want (Entertainment, Dining out)</option>
+            <option value="future" id="opt-f">Future (Life Insurance & Savings)</option>
         </select>
-        <button class="btn" onclick="addExpense()">Add Expense</button>
-        <button class="btn" style="background: var(--green);" onclick="showReportUI()">Finish & Create Report</button>
+        <button class="btn" id="btn-add" onclick="addExpense()">Add Expense</button>
+        <button class="btn" id="btn-rep" style="background: var(--green);" onclick="showReportUI()">Finish & Report</button>
         
         <div id="history-section">
-            <div style="font-weight: bold; margin-bottom: 10px;">Recent History</div>
+            <div style="font-weight: bold; margin-bottom: 10px;" id="lbl-hist">Recent History</div>
             <div id="history-list"></div>
         </div>
     </div>
@@ -75,13 +77,13 @@
     <div id="report-ui" style="display:none;">
         <input type="date" id="rep-start">
         <input type="date" id="rep-end" style="margin-top: 5px;">
-        <button class="btn" style="margin-top: 15px;" onclick="generatePDF()">Download Report with Graph</button>
-        <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">Reset</button>
+        <button class="btn" id="btn-pdf" style="margin-top: 15px;" onclick="generatePDF()">Download Report</button>
+        <button class="btn" id="btn-res" style="background: #eee; color: #333;" onclick="location.reload()">Reset</button>
     </div>
 
     <footer>
         <strong>Archaigel</strong> | Financial Architect<br>
-       Your personal information stays on your device
+        <span id="lbl-priv">Your information stays on your device</span>
     </footer>
 </div>
 
@@ -90,7 +92,34 @@
 <script>
     let expenses = [];
     let budget = { needs: 0, wants: 0, future: 0, totalIncome: 0 };
+    let currentLang = 'en';
     document.getElementById('exp-date').valueAsDate = new Date();
+
+    const trans = {
+        en: { bal: "Balance Remaining", n: "Needs 50%", w: "Want 30%", f: "Future 20%", start: "Start Wealth Plan", add: "Add Expense", rep: "Finish & Report", hist: "Recent History", priv: "Your information stays on your device", del: "Delete", incPlac: "Monthly Income ($)", descPlac: "Description", optN: "Needs (Housing, Food, Utilities)", optW: "Want (Entertainment, Dining out)", optF: "Future (Life Insurance & Savings)" },
+        fr: { bal: "Solde Restant", n: "Besoins 50%", w: "Envies 30%", f: "Futur 20%", start: "Démarrer le plan", add: "Enregistrer", rep: "Terminer & Rapport", hist: "Historique récent", priv: "Vos informations restent sur votre appareil", del: "Suppr", incPlac: "Revenu Mensuel ($)", descPlac: "Description", optN: "Besoins (Logement, Nourriture)", optW: "Envies (Loisirs, Sorties)", optF: "Futur (Assurance Vie & Épargne)" },
+        es: { bal: "Saldo Restante", n: "Necesidades 50%", w: "Deseos 30%", f: "Futuro 20%", start: "Iniciar Plan", add: "Registrar Gasto", rep: "Finalizar y Reporte", hist: "Historial Reciente", priv: "Su información permanece en su dispositivo", del: "Borrar", incPlac: "Ingreso Mensual ($)", descPlac: "Descripción", optN: "Necesidades (Vivienda, Comida)", optW: "Deseos (Diversión, Comidas)", optF: "Futuro (Seguros y Ahorros)" }
+    };
+
+    function changeLanguage() {
+        currentLang = document.getElementById('lang-picker').value;
+        const t = trans[currentLang];
+        document.getElementById('lbl-bal').innerText = t.bal;
+        document.getElementById('lbl-n').innerText = t.n;
+        document.getElementById('lbl-w').innerText = t.w;
+        document.getElementById('lbl-f').innerText = t.f;
+        document.getElementById('btn-start').innerText = t.start;
+        document.getElementById('btn-add').innerText = t.add;
+        document.getElementById('btn-rep').innerText = t.rep;
+        document.getElementById('lbl-hist').innerText = t.hist;
+        document.getElementById('lbl-priv').innerText = t.priv;
+        document.getElementById('monthly-income').placeholder = t.incPlac;
+        document.getElementById('exp-desc').placeholder = t.descPlac;
+        document.getElementById('opt-n').innerText = t.optN;
+        document.getElementById('opt-w').innerText = t.optW;
+        document.getElementById('opt-f').innerText = t.optF;
+        updateHistory();
+    }
 
     function initBudget() {
         const inc = document.getElementById('monthly-income').value;
@@ -108,10 +137,9 @@
         const a = parseFloat(document.getElementById('exp-amt').value);
         const c = document.getElementById('exp-cat').value;
         if (!d || !s || isNaN(a)) return;
-
         budget[c] -= a;
-        expenses.unshift({ id: Date.now(), date: d, desc: s, amt: a, cat: c });
-        
+        expenses.push({ id: Date.now(), date: d, desc: s, amt: a, cat: c });
+        expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
         updateUI();
         updateHistory();
         document.getElementById('exp-desc').value = '';
@@ -119,13 +147,11 @@
     }
 
     function deleteExpense(id) {
-        const index = expenses.findIndex(e => e.id === id);
-        if (index > -1) {
-            const item = expenses[index];
-            budget[item.cat] += item.amt;
-            expenses.splice(index, 1);
-            updateUI();
-            updateHistory();
+        const i = expenses.findIndex(e => e.id === id);
+        if (i > -1) {
+            budget[expenses[i].cat] += expenses[i].amt;
+            expenses.splice(i, 1);
+            updateUI(); updateHistory();
         }
     }
 
@@ -138,14 +164,13 @@
 
     function updateHistory() {
         const list = document.getElementById('history-list');
-        list.innerHTML = expenses.slice(0, 10).map(e => `
+        list.innerHTML = expenses.map(e => `
             <div class="history-item">
                 <div>
                     <div class="history-desc">${e.desc}</div>
-                    <div class="history-meta">${e.date} • ${e.cat.toUpperCase()}</div>
-                    <div style="font-weight: bold; color: #e74c3c;">-$${e.amt.toFixed(2)}</div>
+                    <div class="history-meta">${e.date} • ${e.cat.toUpperCase()} • -$${e.amt.toFixed(2)}</div>
                 </div>
-                <div class="delete-btn" onclick="deleteExpense(${e.id})">×</div>
+                <button class="delete-btn" onclick="deleteExpense(${e.id})">${trans[currentLang].del}</button>
             </div>
         `).join('');
     }
@@ -158,51 +183,18 @@
     async function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        const totals = {
-            needs: expenses.filter(e => e.cat === 'needs').reduce((sum, e) => sum + e.amt, 0),
-            wants: expenses.filter(e => e.cat === 'wants').reduce((sum, e) => sum + e.amt, 0),
-            future: expenses.filter(e => e.cat === 'future').reduce((sum, e) => sum + e.amt, 0)
-        };
-
+        const totals = { n: expenses.filter(e=>e.cat==='needs').reduce((s,e)=>s+e.amt,0), w: expenses.filter(e=>e.cat==='wants').reduce((s,e)=>s+e.amt,0), f: expenses.filter(e=>e.cat==='future').reduce((s,e)=>s+e.amt,0) };
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
-        const myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Needs', 'Wants', 'Future'],
-                datasets: [{
-                    data: [totals.needs, totals.wants, totals.future],
-                    backgroundColor: ['#3498db', '#f1c40f', '#2ecc71']
-                }]
-            },
-            options: { animation: false, responsive: false }
-        });
-
+        const myChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Needs', 'Wants', 'Future'], datasets: [{ data: [totals.n, totals.w, totals.f], backgroundColor: ['#3498db', '#f1c40f', '#2ecc71'] }] }, options: { animation: false, responsive: false } });
         await new Promise(r => setTimeout(r, 600));
-        const chartImg = canvas.toDataURL('image/png');
-
-        doc.setFontSize(20);
-        doc.text("Archaigel Penny AI Report", 14, 20);
-        doc.setFontSize(10);
-        doc.text(`Lead Designer: Archaigel`, 14, 28);
-        
-        doc.addImage(chartImg, 'PNG', 70, 40, 60, 60);
-
-        doc.autoTable({
-            startY: 110,
-            head: [['Date', 'Description', 'Category', 'Amount']],
-            body: expenses.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt.toFixed(2)}`])
-        });
-
-        const finalY = doc.lastAutoTable.finalY + 10;
-        doc.text(`Total Monthly Income: $${budget.totalIncome.toFixed(2)}`, 14, finalY);
-        doc.text(`Total Period Spending: $${(totals.needs + totals.wants + totals.future).toFixed(2)}`, 14, finalY + 7);
-        
+        doc.setFontSize(20); doc.text("Archaigel Penny AI Report", 14, 20);
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 70, 40, 60, 60);
+        doc.autoTable({ startY: 110, head: [['Date', 'Desc', 'Cat', 'Amt']], body: expenses.map(e => [e.date, e.desc, e.cat, `$${e.amt.toFixed(2)}`]) });
+        doc.text(`Total Monthly Income: $${budget.totalIncome.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
         doc.save("Penny_Report_Archaigel.pdf");
         myChart.destroy();
     }
 </script>
-
 </body>
 </html>
