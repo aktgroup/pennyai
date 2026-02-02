@@ -66,9 +66,9 @@
     </div>
 
     <div class="dashboard">
-         en: { bal: "Balance Remaining", n: "Needs 50%", w: "Want 30%", f: "Future 20%", start: "Start tracking", add: "Add Expense", rep: "Finish & Report", hist: "Recent History", priv: "Your information stays on your device", del: "Delete", incPlac: "Monthly Income ($)", descPlac: "Description", optN: "Needs 50% (Housing, Food, Utilities)", optW: "Want 30% (Entertainment, Dining out)", optF: "Future 20% (Life Insurance & Savings)" },
-        fr: { bal: "Solde Restant", n: "Besoins 50%", w: "Envies 30%", f: "Futur 20%", start: "Démarrer le suivi", add: "Enregistrer", rep: "Terminer & Rapport", hist: "Historique récent", priv: "Vos informations restent sur votre appareil", del: "Suppr", incPlac: "Revenu Mensuel ($)", descPlac: "Description", optN: "Besoins 50% (Logement, Factures)", optW: "Envies 30% (Loisirs, Sorties)", optF: "Futur 20% (Assurance Vie & Épargne)" },
-        es: { bal: "Saldo Restante", n: "Necesidades 50%", w: "Deseos 30%", f: "Futuro 20%", start: "Iniciar a rastrear", add: "Registrar Gasto", rep: "Finalizar y Reporte", hist: "Historial Reciente", priv: "Su información permanece en su dispositivo", del: "Borrar", incPlac: "Ingreso Mensual ($)", descPlac: "Descripción", optN: "Necesidades 50% (Vivienda, Comida)", optW: "Deseos 30% (Diversión, Comidas)", optF: "Futuro 20% (Seguros y Ahorros)" }
+        <div style="text-align: center;"><div class="circle needs" id="needs-val">$0</div><small id="lbl-n" style="display:block; margin-top:5px; font-weight:600;">Needs 50%</small></div>
+        <div style="text-align: center;"><div class="circle wants" id="wants-val">$0</div><small id="lbl-w" style="display:block; margin-top:5px; font-weight:600;">Want 30%</small></div>
+        <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small id="lbl-f" style="display:block; margin-top:5px; font-weight:600;">Future 20%</small></div>
     </div>
 
     <div id="setup-ui">
@@ -117,9 +117,9 @@
     document.getElementById('exp-date').valueAsDate = new Date();
 
     const trans = {
-    en: { bal: "Balance Remaining", n: "Needs 50%", w: "Want 30%", f: "Future 20%", start: "Start tracking", add: "Add Expense", rep: "Finish & Report", hist: "Recent History", priv: "Your information stays on your device", del: "Delete", incPlac: "Monthly Income ($)", descPlac: "Description", optN: "Needs 50% (Housing, Food, Utilities)", optW: "Want 30% (Entertainment, Dining out)", optF: "Future 20% (Life Insurance & Savings)" },
+        en: { bal: "Balance Remaining", n: "Needs 50%", w: "Want 30%", f: "Future 20%", start: "Start tracking", add: "Add Expense", rep: "Finish & Report", hist: "Recent History", priv: "Your information stays on your device", del: "Delete", incPlac: "Monthly Income ($)", descPlac: "Description", optN: "Needs 50% (Housing, Food, Utilities)", optW: "Want 30% (Entertainment, Dining out)", optF: "Future 20% (Life Insurance & Savings)" },
         fr: { bal: "Solde Restant", n: "Besoins 50%", w: "Envies 30%", f: "Futur 20%", start: "Démarrer le suivi", add: "Enregistrer", rep: "Terminer & Rapport", hist: "Historique récent", priv: "Vos informations restent sur votre appareil", del: "Suppr", incPlac: "Revenu Mensuel ($)", descPlac: "Description", optN: "Besoins 50% (Logement, Factures)", optW: "Envies 30% (Loisirs, Sorties)", optF: "Futur 20% (Assurance Vie & Épargne)" },
-        es: { bal: "Saldo Restante", n: "Necesidades 50%", w: "Deseos 30%", f: "Futuro 20%", start: "Iniciar a rastrear", add: "Registrar Gasto", rep: "Finalizar y Reporte", hist: "Historial Reciente", priv: "Su información permanece en su dispositivo", del: "Borrar", incPlac: "Ingreso Mensual ($)", descPlac: "Descripción", optN: "Necesidades 50% (Vivienda, Comida)", optW: "Deseos 30% (Diversión, Comidas)", optF: "Futuro 20% (Seguros y Ahorros)" }     
+        es: { bal: "Saldo Restante", n: "Necesidades 50%", w: "Deseos 30%", f: "Futuro 20%", start: "Iniciar a rastrear", add: "Registrar Gasto", rep: "Finalizar y Reporte", hist: "Historial Reciente", priv: "Su información permanece en su dispositivo", del: "Borrar", incPlac: "Ingreso Mensual ($)", descPlac: "Descripción", optN: "Necesidades 50% (Vivienda, Comida)", optW: "Deseos 30% (Diversión, Comidas)", optF: "Futuro 20% (Seguros y Ahorros)" }
     };
 
     function changeLanguage() {
