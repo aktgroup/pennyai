@@ -1,23 +1,25 @@
 # Penny AI 🪙
-**Your Financial Partner by AKT GROUP LLC**
+### Designed by **Archaigel** (AKT Group LLC)
 
-Penny AI is a simple, private 50/30/20 budgeting tool designed for everyone that earn money.
+**Penny AI** is a financial discipline tool designed for middle-class families and small business owners. It is built to support the **Community Shield 2026** initiative—a mission to ensure that **"No Family is Left Behind."**
 
-## 📲 How to Install (English)
-1. Open the app link in your browser.
-2. **iPhone:** Tap the 'Share' button and select 'Add to Home Screen'.
-3. **Android:** Tap the three dots and select 'Install' or 'Add to Home Screen'.
+## 🛡️ The Mission
+Our goal is to stop the "GoFundMe cycle" by educating 1,000 families across 25 states. We focus on:
+* **Protection:** Using Life Insurance as a foundation.
+* **Accumulation:** Building tax-free wealth.
+* **Legacy:** Will and Trust planning for the future.
 
-## 📲 Comment Installer (Français)
-1. Ouvrez le lien de l'application dans votre navigateur.
-2. **iPhone :** Appuyez sur le bouton 'Partager' et sélectionnez 'Sur l'écran d'accueil'.
-3. **Android :** Appuyez sur les trois points et sélectionnez 'Installer' ou 'Ajouter à l'écran d'accueil'.
+## 🛠 Features
+* **50/30/20 Strategy:** Automated tracking for Needs, Wants, and Future savings.
+* **Trilingual Support:** Available in English, French, and Spanish.
+* **Visual Reporting:** Generates professional PDF reports with spending graphs.
+* **Privacy First:** All data stays locally on your device.
 
- ## 📲 Cómo Instalar (Español)
-1. Abra el enlace de la aplicación en su navegador.
-2. **iPhone:** Toque el botón 'Compartir' y seleccione 'Agregar a la pantalla de inicio'.
-3. **Android:** Toque los tres puntos y seleccione 'Instalar' o 'Agregar a la pantalla de inicio'.
+## 🚀 How to Use
+1. Enter your Monthly Income.
+2. Log your daily expenses with a date and description.
+3. Review your "Recent History" and delete any mistakes.
+4. Download your Monthly Report to track your progress.
 
-
-## 🔒 Privacy
-This app is a client-side tool. All financial data entered stays on your personal device. We do not collect or sell your personal information.
+---
+*“Educating our communities today for a secure tomorrow.”* — **Archaigel**
