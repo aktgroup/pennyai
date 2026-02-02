@@ -6,6 +6,7 @@
     <title>Penny AI - by Archaigel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --blue: #3498db; --yellow: #f1c40f; --green: #2ecc71; --dark: #2c3e50; --bg: #fdfaf6; --white: #ffffff; }
         html, body { height: 100%; margin: 0; padding: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
@@ -14,18 +15,14 @@
         .total-box { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; border: 1px dashed #ccc; }
         .total-amount { font-size: 32px; font-weight: bold; color: var(--dark); }
         .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
         .penny-bubble { background: #e1f5fe; border-radius: 12px; padding: 15px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid var(--blue); line-height: 1.4; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
         .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
-        
-        #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
-        .history-desc { font-weight: bold; color: var(--dark); }
-        .history-meta { color: #7f8c8d; font-size: 11px; }
-
         footer { padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; margin-top: auto; }
+        /* Hidden canvas for PDF chart generation */
+        #chartCanvas { position: absolute; left: -9999px; top: -9999px; }
     </style>
 </head>
 <body>
@@ -47,10 +44,6 @@
         <div style="text-align: center;"><div class="circle future" id="future-val">$0</div><small>Future 20%</small></div>
     </div>
 
-    <div class="penny-bubble" id="penny-message">
-        "Hi! I am Penny. Let's grow your financial tree with Archaigel's strategy."
-    </div>
-
     <div id="setup-ui">
         <input type="number" id="monthly-income" placeholder="Total Monthly Income ($)" inputmode="decimal">
         <button class="btn" onclick="initBudget()">Start Wealth Plan</button>
@@ -58,27 +51,23 @@
 
     <div id="action-ui" style="display:none;">
         <input type="date" id="exp-date">
-        <input type="text" id="exp-desc" placeholder="Expense Description (e.g., Rent)">
+        <input type="text" id="exp-desc" placeholder="Expense Description">
         <input type="number" id="exp-amt" placeholder="Amount ($)" inputmode="decimal">
         <select id="exp-cat">
-            <option value="needs">Needs (for Housing, Food, Utilities)</option>
+            <option value="needs">Needs (Housing, Food, Utilities)</option>
             <option value="wants">Want (Entertainment, Dining out)</option>
             <option value="future">Future (Life Insurance & Savings)</option>
         </select>
         <button class="btn" onclick="addExpense()">Add Expense</button>
-        <button class="btn" style="background: var(--green);" onclick="showReportUI()">Generate Monthly Report</button>
-        
-        <div id="history-section">
-            <div style="font-weight: bold; margin-bottom: 10px;">Recent History</div>
-            <div id="history-list"></div>
-        </div>
+        <button class="btn" style="background: var(--green);" onclick="showReportUI()">Finish & Create Graph Report</button>
     </div>
 
     <div id="report-ui" style="display:none;">
+        <div style="text-align: center; margin-bottom: 10px;">Select Dates:</div>
         <input type="date" id="rep-start">
-        <input type="date" id="rep-end" style="margin-top: 5px;">
-        <button class="btn" style="margin-top: 15px;" onclick="generatePDF()">Download PDF Report</button>
-        <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">Start New Month</button>
+        <input type="date" id="rep-end">
+        <button class="btn" onclick="generatePDF()">Download Report with Graph</button>
+        <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">Reset</button>
     </div>
 
     <footer>
@@ -87,15 +76,17 @@
     </footer>
 </div>
 
+<canvas id="chartCanvas" width="400" height="400"></canvas>
+
 <script>
     let expenses = [];
-    let budget = { needs: 0, wants: 0, future: 0, total: 0 };
+    let budget = { needs: 0, wants: 0, future: 0, totalIncome: 0 };
     document.getElementById('exp-date').valueAsDate = new Date();
 
     function initBudget() {
         const inc = document.getElementById('monthly-income').value;
         if (inc <= 0) return;
-        budget.total = inc;
+        budget.totalIncome = parseFloat(inc);
         budget.needs = inc * 0.5; budget.wants = inc * 0.3; budget.future = inc * 0.2;
         document.getElementById('setup-ui').style.display = 'none';
         document.getElementById('action-ui').style.display = 'block';
@@ -108,12 +99,9 @@
         const a = parseFloat(document.getElementById('exp-amt').value);
         const c = document.getElementById('exp-cat').value;
         if (!d || !s || isNaN(a)) return;
-
         budget[c] -= a;
-        expenses.unshift({ date: d, desc: s, amt: a, cat: c });
-        
+        expenses.push({ date: d, desc: s, amt: a, cat: c });
         updateUI();
-        updateHistory();
         document.getElementById('exp-desc').value = '';
         document.getElementById('exp-amt').value = '';
     }
@@ -125,40 +113,68 @@
         document.getElementById('total-val').innerText = `$${Math.round(budget.needs + budget.wants + budget.future)}`;
     }
 
-    function updateHistory() {
-        const list = document.getElementById('history-list');
-        list.innerHTML = expenses.slice(0, 5).map(e => {
-            let catLabel = e.cat === 'needs' ? 'Needs' : (e.cat === 'wants' ? 'Want' : 'Future');
-            return `
-                <div class="history-item">
-                    <div>
-                        <div class="history-desc">${e.desc}</div>
-                        <div class="history-meta">${e.date} • ${catLabel}</div>
-                    </div>
-                    <div style="font-weight: bold; color: #e74c3c;">-$${e.amt}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
     function showReportUI() {
         document.getElementById('action-ui').style.display = 'none';
         document.getElementById('report-ui').style.display = 'block';
     }
 
-    function generatePDF() {
+    async function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const rows = expenses.map(e => {
-            let catLabel = e.cat === 'needs' ? 'Needs' : (e.cat === 'wants' ? 'Want' : 'Future');
-            return [e.date, e.desc, catLabel, `$${e.amt}`];
+        
+        const totals = {
+            needs: expenses.filter(e => e.cat === 'needs').reduce((sum, e) => sum + e.amt, 0),
+            wants: expenses.filter(e => e.cat === 'wants').reduce((sum, e) => sum + e.amt, 0),
+            future: expenses.filter(e => e.cat === 'future').reduce((sum, e) => sum + e.amt, 0)
+        };
+
+        // 1. Create the Chart Image
+        const canvas = document.getElementById('chartCanvas');
+        const ctx = canvas.getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Needs', 'Wants', 'Future'],
+                datasets: [{
+                    data: [totals.needs, totals.wants, totals.future],
+                    backgroundColor: ['#3498db', '#f1c40f', '#2ecc71']
+                }]
+            },
+            options: { animation: false, responsive: false }
         });
-        doc.setFontSize(18);
-        doc.text("Penny AI Financial Report", 14, 20);
+
+        // Small delay to ensure chart is drawn
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const chartImg = canvas.toDataURL('image/png');
+
+        // 2. Build PDF Content
+        doc.setFontSize(20);
+        doc.text("Archaigel Penny AI Report", 14, 20);
+        
+        doc.setFontSize(12);
+        doc.text("Personalized Advice:", 14, 30);
+        let advice = "Great job tracking! ";
+        if (totals.wants > budget.totalIncome * 0.3) advice += "Your 'Wants' are high. Review your entertainment spending. ";
+        if (totals.future < budget.totalIncome * 0.2) advice += "Try to increase your 'Future' allocation for better security.";
         doc.setFontSize(10);
-        doc.text("Architect: Archaigel", 14, 28);
-        doc.autoTable({ startY: 35, head: [['Date', 'Description', 'Category', 'Amount']], body: rows });
-        doc.save("Penny_Archaigel_Report.pdf");
+        doc.text(doc.splitTextToSize(advice, 180), 14, 38);
+
+        // Add Graph Image
+        doc.addImage(chartImg, 'PNG', 70, 50, 60, 60);
+
+        // Transaction Table
+        doc.autoTable({
+            startY: 120,
+            head: [['Date', 'Description', 'Category', 'Amount']],
+            body: expenses.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt.toFixed(2)}`])
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.text(`Total Income: $${budget.totalIncome.toFixed(2)}`, 14, finalY);
+        doc.text(`Lead Architect: Archaigel`, 14, finalY + 10);
+
+        doc.save("Archaigel_Financial_Report.pdf");
+        myChart.destroy(); // Clean up memory
     }
 </script>
 
