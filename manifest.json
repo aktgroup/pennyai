@@ -1,6 +1,7 @@
 {
   "name": "Penny AI by Archaigel",
   "short_name": "Penny AI",
+  "description": "Financial architect tool for the 50/30/20 wealth strategy.",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#fdfaf6",
