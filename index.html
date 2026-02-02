@@ -17,11 +17,16 @@
         .dashboard { display: flex; justify-content: space-around; margin-bottom: 15px; }
         .circle { width: 75px; height: 75px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .needs { background: var(--blue); } .wants { background: var(--yellow); } .future { background: var(--green); }
-        .penny-bubble { background: #e1f5fe; border-radius: 12px; padding: 15px; margin-bottom: 15px; font-size: 14px; border-left: 5px solid var(--blue); line-height: 1.4; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #fafafa; }
         .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: var(--dark); color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 8px; }
+        
+        /* History List Styling */
+        #history-section { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .history-desc { font-weight: bold; color: var(--dark); }
+        .history-meta { color: #7f8c8d; font-size: 11px; }
+
         footer { padding: 15px 0; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; margin-top: auto; }
-        /* Hidden canvas for PDF chart generation */
         #chartCanvas { position: absolute; left: -9999px; top: -9999px; }
     </style>
 </head>
@@ -59,20 +64,24 @@
             <option value="future">Future (Life Insurance & Savings)</option>
         </select>
         <button class="btn" onclick="addExpense()">Add Expense</button>
-        <button class="btn" style="background: var(--green);" onclick="showReportUI()">Finish & Create Graph Report</button>
+        <button class="btn" style="background: var(--green);" onclick="showReportUI()">Finish & Create Report</button>
+        
+        <div id="history-section">
+            <div style="font-weight: bold; margin-bottom: 10px;">Recent History</div>
+            <div id="history-list"></div>
+        </div>
     </div>
 
     <div id="report-ui" style="display:none;">
-        <div style="text-align: center; margin-bottom: 10px;">Select Dates:</div>
         <input type="date" id="rep-start">
-        <input type="date" id="rep-end">
-        <button class="btn" onclick="generatePDF()">Download Report with Graph</button>
+        <input type="date" id="rep-end" style="margin-top: 5px;">
+        <button class="btn" style="margin-top: 15px;" onclick="generatePDF()">Download Report</button>
         <button class="btn" style="background: #eee; color: #333;" onclick="location.reload()">Reset</button>
     </div>
 
     <footer>
         <strong>Archaigel</strong> | Financial Architect<br>
-        Do not sell my personal information
+        All your information is stored on your device
     </footer>
 </div>
 
@@ -99,9 +108,12 @@
         const a = parseFloat(document.getElementById('exp-amt').value);
         const c = document.getElementById('exp-cat').value;
         if (!d || !s || isNaN(a)) return;
+
         budget[c] -= a;
-        expenses.push({ date: d, desc: s, amt: a, cat: c });
+        expenses.unshift({ date: d, desc: s, amt: a, cat: c });
+        
         updateUI();
+        updateHistory();
         document.getElementById('exp-desc').value = '';
         document.getElementById('exp-amt').value = '';
     }
@@ -111,6 +123,19 @@
         document.getElementById('wants-val').innerText = `$${Math.round(budget.wants)}`;
         document.getElementById('future-val').innerText = `$${Math.round(budget.future)}`;
         document.getElementById('total-val').innerText = `$${Math.round(budget.needs + budget.wants + budget.future)}`;
+    }
+
+    function updateHistory() {
+        const list = document.getElementById('history-list');
+        list.innerHTML = expenses.slice(0, 10).map(e => `
+            <div class="history-item">
+                <div>
+                    <div class="history-desc">${e.desc}</div>
+                    <div class="history-meta">${e.date} • ${e.cat.toUpperCase()}</div>
+                </div>
+                <div style="font-weight: bold; color: #e74c3c;">-$${e.amt.toFixed(2)}</div>
+            </div>
+        `).join('');
     }
 
     function showReportUI() {
@@ -128,7 +153,6 @@
             future: expenses.filter(e => e.cat === 'future').reduce((sum, e) => sum + e.amt, 0)
         };
 
-        // 1. Create the Chart Image
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
         const myChart = new Chart(ctx, {
@@ -143,38 +167,28 @@
             options: { animation: false, responsive: false }
         });
 
-        // Small delay to ensure chart is drawn
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(r => setTimeout(r, 600));
         const chartImg = canvas.toDataURL('image/png');
 
-        // 2. Build PDF Content
         doc.setFontSize(20);
-        doc.text("Archaigel Penny AI Report", 14, 20);
-        
-        doc.setFontSize(12);
-        doc.text("Personalized Advice:", 14, 30);
-        let advice = "Great job tracking! ";
-        if (totals.wants > budget.totalIncome * 0.3) advice += "Your 'Wants' are high. Review your entertainment spending. ";
-        if (totals.future < budget.totalIncome * 0.2) advice += "Try to increase your 'Future' allocation for better security.";
+        doc.text("Penny AI Financial Report", 14, 20);
         doc.setFontSize(10);
-        doc.text(doc.splitTextToSize(advice, 180), 14, 38);
+        doc.text("Lead Designer: Archaigel", 14, 28);
+        
+        doc.addImage(chartImg, 'PNG', 70, 40, 60, 60);
 
-        // Add Graph Image
-        doc.addImage(chartImg, 'PNG', 70, 50, 60, 60);
-
-        // Transaction Table
         doc.autoTable({
-            startY: 120,
+            startY: 110,
             head: [['Date', 'Description', 'Category', 'Amount']],
             body: expenses.map(e => [e.date, e.desc, e.cat.toUpperCase(), `$${e.amt.toFixed(2)}`])
         });
 
         const finalY = doc.lastAutoTable.finalY + 10;
-        doc.text(`Total Income: $${budget.totalIncome.toFixed(2)}`, 14, finalY);
-        doc.text(`Lead Architect: Archaigel`, 14, finalY + 10);
-
-        doc.save("Archaigel_Financial_Report.pdf");
-        myChart.destroy(); // Clean up memory
+        doc.text(`Total Monthly Income: $${budget.totalIncome.toFixed(2)}`, 14, finalY);
+        doc.text(`Total Period Spending: $${(totals.needs + totals.wants + totals.future).toFixed(2)}`, 14, finalY + 7);
+        
+        doc.save("Penny_Report_Archaigel.pdf");
+        myChart.destroy();
     }
 </script>
 
